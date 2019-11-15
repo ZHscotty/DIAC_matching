@@ -103,6 +103,8 @@ class Model:
                 loss_d = loss_total / dev_step
                 acc_dev.append(acc_d)
                 loss_dev.append(loss_d)
+                print('Epoch{}----acc:{:.5f},loss:{:.5f},val_acc:{:.5f},val_loss:{:.5f}'.format(step, acc_t, loss_t,
+                                                                                                acc_d, loss_d))
 
                 loss_ = loss_d
                 acc_ = acc_d
