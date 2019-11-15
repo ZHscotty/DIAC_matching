@@ -19,6 +19,8 @@ def get_stopword(path):
 
 
 def tokenize(input, path_stopword):
+    # input-str
+    # path_stopword - stopword.txt
     stopword = get_stopword(path_stopword)
     words = []
     temp = jieba.lcut(input)
@@ -47,12 +49,17 @@ def get_maxlen(path):
 
     return max(lent), sum(lent)/len(lent)
 
+def get_testid(path):
+    with open(path, 'r', encoding='utf-8') as f:
+        ids = [x.strip().split('\t')[0] for x in f.readlines()]
+    return ids
+
 
 def get_trainnums(path):
     with open(path, 'r', encoding='utf-8') as f:
         return len(f.readlines())
 
 
-if __name__ == '__main__':
-    l1 = get_trainnums('../data/trainset.txt')
-    print(l1)
+# if __name__ == '__main__':
+# #     l1 = get_trainnums('../data/trainset.txt')
+# #     print(l1)
