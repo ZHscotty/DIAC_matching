@@ -1,42 +1,12 @@
-# Definition for a binary tree node.
-class TreeNode(object):
-    def __init__(self, x):
-        self.val = x
-        self.left = None
-        self.right = None
+import pandas as pd
+import numpy as np
 
-
-class Solution(object):
-    def a(self, root, ll):
-        if root is None:
-            return
-        list = []
-        self.xian(root, 0, list)
-        ll.extend(list)
-        self.a()
-
-    def xian(self, root, sum, list):
-        if root is None:
-            return
-        sum += root.val
-        list.append(sum)
-        self.xian(root.left, sum, list)
-        self.xian(root.right, sum, list)
-
-
-if __name__ == '__main__':
-    root = TreeNode(1)
-    root.left = TreeNode(3)
-    root.right = TreeNode(1)
-    p = root.left
-    p.left = TreeNode(4)
-    p.right = TreeNode(5)
-
-    q = root.right
-    q.left = TreeNode(6)
-    q.right = TreeNode(7)
-
-    s = Solution()
-    list = []
-    s.xian(root, 0, list)
-    print(list)
+a = [1,2,3]
+b = [3,4,5]
+l = [a, b]
+l = np.array(l)
+l = np.transpose(l)
+print(l)
+print(l.shape)
+p = pd.DataFrame(l)
+p.to_csv('../data/text.csv', index=False, header=False)
