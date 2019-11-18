@@ -5,4 +5,5 @@
 2.word2vec+BILSTM+Attention+concat+softmax \
 3.word2vec+BILSTM+Attention+consine \
 4.“Text Matching as Image Recognition” \
-5."BIMPM"
+5."BIMPM" \
+6."ESIM"
