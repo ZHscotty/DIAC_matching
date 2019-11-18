@@ -1,6 +1,8 @@
 import jieba
 import re
 import ast
+import numpy as np
+import gensim
 
 
 def get_word2index(path):
@@ -58,6 +60,18 @@ def get_testid(path):
 def get_trainnums(path):
     with open(path, 'r', encoding='utf-8') as f:
         return len(f.readlines())
+
+
+def get_embeddingmatrix(path_word2index, path_w2vmodel, path_w2v):
+    word2index = get_word2index(path_word2index)
+    model = gensim.models.word2vec.Word2Vec.load(path_w2vmodel)
+    emd = np.random.uniform(-0.05, 0.05, size=(len(word2index), 256))
+    matrix = model.wv.load_word2vec_format(path_w2v)
+    for x in word2index:
+        if word2index[x] in matrix:
+            emd[int(word2index[x])] = matrix[word2index[x]]
+    print('emd_matrix shape:', emd.shape)
+    return matrix
 
 
 # if __name__ == '__main__':
