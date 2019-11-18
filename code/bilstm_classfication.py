@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 
 class Model:
-    def __init__(self):
+    def __init__(self, embedding_matrix=None):
         self.input1 = tf.placeholder(shape=[None, None], dtype=tf.int32)
         self.input2 = tf.placeholder(shape=[None, None], dtype=tf.int32)
         self.label = tf.placeholder(shape=[None, 2], dtype=tf.float32)
@@ -20,23 +20,32 @@ class Model:
         self.word2index = utils.get_word2index('../data/word2index.txt')
         self.path_train = '../data/trainset.txt'
         self.path_test = '../data/testset.txt'
+        self.embedding_matrix = embedding_matrix
         self.trainnums = utils.get_trainnums(self.path_train)
         self.testnums = utils.get_trainnums(self.path_test)
 
         # embedding
-        embedding_matrix = tf.get_variable(name='embedding', shape=[len(self.word2index), config.EMBEDD_SIZE])
+        if self.embedding_matrix is not None:
+            embedding_matrix = tf.get_variable('embedding', [len(self.word2index), config.EMBEDD_SIZE],
+                                               initializer=tf.constant_initializer(self.embedding_matrix))
+        else:
+            embedding_matrix = tf.get_variable('embedding', [len(self.word2index), config.EMBEDD_SIZE],
+                                               initializer=tf.random_normal_initializer)
+
         embedd_1 = tf.nn.embedding_lookup(embedding_matrix, self.input1)
         embedd_2 = tf.nn.embedding_lookup(embedding_matrix, self.input2)
 
         # BILSTM
-        cell_fw = tf.contrib.rnn.BasicLSTMCell(config.LSTM_NUM)
-        cell_bw = tf.contrib.rnn.BasicLSTMCell(config.LSTM_NUM)
-        lstm_out1, _ = tf.nn.bidirectional_dynamic_rnn(cell_fw=cell_fw, cell_bw=cell_bw, inputs=embedd_1,
-                                                       dtype=tf.float32)
-        lstm_out2, _ = tf.nn.bidirectional_dynamic_rnn(cell_fw=cell_fw, cell_bw=cell_bw, inputs=embedd_2,
-                                                       dtype=tf.float32)
-        lstm_out1 = tf.concat(lstm_out1, 2)
-        lstm_out2 = tf.concat(lstm_out2, 2)
+        # cell_fw = tf.contrib.rnn.BasicLSTMCell(config.LSTM_NUM)
+        # cell_bw = tf.contrib.rnn.BasicLSTMCell(config.LSTM_NUM)
+        # lstm_out1, _ = tf.nn.bidirectional_dynamic_rnn(cell_fw=cell_fw, cell_bw=cell_bw, inputs=embedd_1,
+        #                                                dtype=tf.float32)
+        # lstm_out2, _ = tf.nn.bidirectional_dynamic_rnn(cell_fw=cell_fw, cell_bw=cell_bw, inputs=embedd_2,
+        #                                                dtype=tf.float32)
+        # lstm_out1 = tf.concat(lstm_out1, 2)
+        # lstm_out2 = tf.concat(lstm_out2, 2)
+        lstm_out1 = self.bilstm_layer(embedd_1, scope='lstm', reuse=False)
+        lstm_out2 = self.bilstm_layer(embedd_2, scope='lstm', reuse=True)
         lstm_out1 = lstm_out1[:, -1, :]
         lstm_out2 = lstm_out2[:, -1, :]
 
@@ -50,6 +59,17 @@ class Model:
                                           dtype=tf.float32))
         self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=self.label, logits=self.logits))
         self.train_step = tf.train.AdamOptimizer(config.LR).minimize(self.loss)
+
+    def bilstm_layer(self, inputs, scope=None, reuse=None):
+        with tf.variable_scope('fw' + scope, reuse=reuse):
+            cell_fw = tf.contrib.rnn.BasicLSTMCell(config.LSTM_NUM)
+        with tf.variable_scope('bw' + scope, reuse=reuse):
+            cell_bw = tf.contrib.rnn.BasicLSTMCell(config.LSTM_NUM)
+        with tf.name_scope('RNN_' + scope), tf.variable_scope('RNN_' + scope, reuse=reuse):
+            lstm_out, _ = tf.nn.bidirectional_dynamic_rnn(cell_fw=cell_fw, cell_bw=cell_bw, inputs=inputs,
+                                                          dtype=tf.float32)
+            lstm_out = tf.concat(lstm_out, 2)
+        return lstm_out
 
     def train(self, train_path, dev_path):
         saver = tf.train.Saver()
@@ -132,18 +152,18 @@ class Model:
             os.makedirs(self.PIC_DIC)
 
         plt.plot(acc_train)
-        # plt.plot(acc_dev)
+        plt.plot(acc_dev)
         plt.ylabel('accuracy')
         plt.xlabel('epoch')
-        # plt.legend(['train', 'test'], loc='upper left')
+        plt.legend(['train', 'test'], loc='upper left')
         plt.savefig(os.path.join(self.PIC_DIC, 'acc.png'))
         plt.close()
 
         plt.plot(loss_train)
-        # plt.plot(loss_dev)
+        plt.plot(loss_dev)
         plt.ylabel('loss')
         plt.xlabel('epoch')
-        # plt.legend(['train', 'test'], loc='upper left')
+        plt.legend(['train', 'test'], loc='upper left')
         plt.savefig(os.path.join(self.PIC_DIC, 'loss.png'))
         plt.close()
 
@@ -164,12 +184,11 @@ class Model:
             print('result shape:', result.shape)
         return result
 
-
     def prepare_data(self, train_path):
         with open(train_path, 'r', encoding='utf-8') as f:
             examples = f.readlines()
-            if len(examples)%config.BATCH_SIZE == 0:
-                steps = len(examples)//config.BATCH_SIZE
+            if len(examples) % config.BATCH_SIZE == 0:
+                steps = len(examples) // config.BATCH_SIZE
             else:
                 steps = len(examples) // config.BATCH_SIZE + 1
             begin = 0
@@ -197,12 +216,11 @@ class Model:
                 label_batch = np.array(label_batch)
                 yield input1_batch, input2_batch, label_batch
 
-
     def prepare_test(self, test_path):
         with open(test_path, 'r', encoding='utf-8') as f:
             examples = f.readlines()
-            if len(examples)%config.BATCH_SIZE == 0:
-                steps = len(examples)//config.BATCH_SIZE
+            if len(examples) % config.BATCH_SIZE == 0:
+                steps = len(examples) // config.BATCH_SIZE
             else:
                 steps = len(examples) // config.BATCH_SIZE + 1
             begin = 0
@@ -223,6 +241,8 @@ class Model:
                 input1_batch = pad_sequences(input1_batch, maxlen=config.MAXLEN, padding='post')
                 input2_batch = pad_sequences(input2_batch, maxlen=config.MAXLEN, padding='post')
                 yield input1_batch, input2_batch
+
+
 
 
 
