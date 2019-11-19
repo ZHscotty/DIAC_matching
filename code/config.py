@@ -1,7 +1,14 @@
+# GLOABAL
 EMBEDD_SIZE = 256
-LSTM_NUM = 128
 BATCH_SIZE = 128
 MAXLEN = 28
 LR = 0.0001
 EARLY_STEP = 3
 EPOCH = 20
+DROP = 0.6
+# LSTM
+LSTM_NUM = 128
+
+# ABCNN
+cnn1_filters = 64
+cnn2_filters = 64
