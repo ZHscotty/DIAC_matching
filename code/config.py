@@ -12,3 +12,6 @@ LSTM_NUM = 128
 # ABCNN
 cnn1_filters = 64
 cnn2_filters = 64
+
+# BIMPM
+num_perspective = 12
