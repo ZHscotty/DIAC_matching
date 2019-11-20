@@ -80,8 +80,6 @@ class Model:
         m_b = tf.concat([input2, b_hat, b_diff, b_mul], axis=-1)
         return m_a, m_b
 
-
-
     def train(self, train_path, dev_path):
         saver = tf.train.Saver()
         with tf.Session() as sess:
@@ -177,6 +175,8 @@ class Model:
         plt.legend(['train', 'test'], loc='upper left')
         plt.savefig(os.path.join(self.PIC_DIC, 'loss.png'))
         plt.close()
+
+
 
     def predict(self, test_path):
         saver = tf.train.Saver()
