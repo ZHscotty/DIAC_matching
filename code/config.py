@@ -15,3 +15,6 @@ cnn2_filters = 64
 
 # BIMPM
 num_perspective = 12
+
+# DIIN
+attention_size = 256
