@@ -54,15 +54,21 @@ class Model:
         p_encode = self.dropout(p_encode)
         h_encode = self.dropout(h_encode)
 
+        I = tf.multiply(tf.expand_dims(p_encode, axis=2), tf.expand_dims(h_encode, axis=1))
 
-        self.logits = tf.layers.dense(x, 2)
+        dense_out = self.dense_net(I)
+        dense_out = self.dropout(dense_out)
+
+        dense_out = tf.reshape(dense_out, shape=(-1, dense_out.shape[1] * dense_out.shape[2] * dense_out.shape[3]))
+        out = tf.layers.dense(dense_out, 256)
+        out = self.dropout(out)
+
+        self.logits = tf.layers.dense(out, 2)
 
         self.acc = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(self.logits, 1), tf.argmax(self.label, 1)),
                                           dtype=tf.float32))
         self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=self.label, logits=self.logits))
         self.train_step = tf.train.AdamOptimizer(config.LR).minimize(self.loss)
-
-
 
     def dropout(self, x):
         if self.is_training is True:
@@ -111,6 +117,26 @@ class Model:
             att_output = tf.einsum('aij,ajk->aik', input_score, v)
 
             return att_output
+
+    def dense_net(self, v):
+        filters = v.shape[-1] * 0.5
+        v_in = tf.layers.conv2d(v, filters=filters, kernel_size=(1, 1))
+        for _ in range(3):
+            for _ in range(8):
+                v_out = tf.layers.conv2d(v_in,
+                                         filters=20,
+                                         kernel_size=(3, 3),
+                                         padding='SAME',
+                                         activation='relu')
+                v_in = tf.concat((v_in, v_out), axis=-1)
+            transition = tf.layers.conv2d(v_in,
+                                          filters=int(v_in.shape[-1].value * 0.5),
+                                          kernel_size=(1, 1))
+            transition_out = tf.layers.max_pooling2d(transition,
+                                                     pool_size=(2, 2),
+                                                     strides=2)
+            v_in = transition_out
+        return v_in
 
     def train(self, train_path, dev_path):
         saver = tf.train.Saver()
