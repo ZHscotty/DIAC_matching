@@ -5,7 +5,8 @@
 随机初始化词向量+双向LSTM+Concat+softmax二分类 0.60 \
 BERT maxlen=28(太小) 0.78 \
 word2vec+ESIM 0.72 \
-word2vec+ABCNN_3  \
+word2vec+ABCNN_3  0.68 \
+word2vec+BIMPM \
 BERT maxlen=100  \
 
 
