@@ -5,6 +5,7 @@
 随机初始化词向量+双向LSTM+Concat+softmax二分类 0.60 \
 BERT maxlen=28(太小) 0.78 \
 word2vec+ESIM 0.72 \
+
 word2vec+ABCNN_3  0.68 \
 word2vec+BIMPM \
 BERT maxlen=100  \
@@ -20,3 +21,7 @@ BERT maxlen=100  \
 4.“Text Matching as Image Recognition” \
 8.字符级别+词级别 \
 9.Q和A分开
+尝试方向：
+ESIM最后得到p h向量后：
+1取最后一层lstm拼接
+2
