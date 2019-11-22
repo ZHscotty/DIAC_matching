@@ -18,3 +18,7 @@ num_perspective = 12
 
 # DIIN
 attention_size = 256
+
+
+#path
+path_stopword = '../data/哈工大停用词表.txt'
