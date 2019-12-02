@@ -1,12 +1,12 @@
 import pandas as pd
 import numpy as np
+import jieba
+import tensorflow as tf
 
-a = [1,2,3]
-b = [3,4,5]
-l = [a, b]
-l = np.array(l)
-l = np.transpose(l)
-print(l)
-print(l.shape)
-p = pd.DataFrame(l)
-p.to_csv('../data/text.csv', index=False, header=False)
+inputs = np.random.random(size=(63, 63, 16))
+inputs_pad = tf.pad(inputs, paddings=[[3, 3], [3, 3], [0, 0]])
+print(inputs_pad.shape)
+conv = tf.layers.conv2d(inputs_pad, filters=32, kernel_size=(7, 7), strides=(1, 1))
+print(conv.shape)
+
+

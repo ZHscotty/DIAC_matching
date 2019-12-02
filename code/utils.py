@@ -1,13 +1,12 @@
 import jieba
 import re
 import ast
-import os
 import numpy as np
 import gensim
+import pandas as pd
+import os
 from sklearn.model_selection import KFold
 
-
-# 获取Word2index
 def get_word2index(path):
     word2index = {}
     with open(path, 'r', encoding='utf-8') as f:
@@ -17,14 +16,12 @@ def get_word2index(path):
     return word2index
 
 
-# 加载停用词表
 def get_stopword(path):
     with open(path, 'r', encoding='utf-8') as f:
         stopword = [x.strip() for x in f.readlines()]
     return stopword
 
 
-# 分词
 def tokenize(input, path_stopword):
     # input-str
     # path_stopword - stopword.txt
@@ -43,7 +40,6 @@ def tokenize(input, path_stopword):
     return words
 
 
-# 获取words级别的最大长度
 def get_maxlen(path):
     words = []
     with open(path, 'r', encoding='utf-8') as f:
@@ -57,21 +53,17 @@ def get_maxlen(path):
 
     return max(lent), sum(lent)/len(lent)
 
-
-# 获取测试集的id信息
 def get_testid(path):
     with open(path, 'r', encoding='utf-8') as f:
         ids = [x.strip().split('\t')[0] for x in f.readlines()]
     return ids
 
 
-# 获取训练集的总数
 def get_trainnums(path):
     with open(path, 'r', encoding='utf-8') as f:
         return len(f.readlines())
 
 
-# 获取预训练词向量
 def get_embeddingmatrix(path_word2index, path_w2vmodel, path_w2v):
     word2index = get_word2index(path_word2index)
     model = gensim.models.word2vec.Word2Vec.load(path_w2vmodel)
@@ -84,26 +76,75 @@ def get_embeddingmatrix(path_word2index, path_w2vmodel, path_w2v):
     return matrix
 
 
-# k-fold
+def process_tsv(path_tsv, path_testset):
+    result = pd.read_csv(path_tsv, sep='\t', names=['0', '1']).values
+    test_predict = np.argmax(result, axis=1)
+    id = get_testid(path_testset)
+    output = [id, test_predict]
+    output = np.array(output)
+    output = np.transpose(output)
+    d = pd.DataFrame(output)
+    d.to_csv('../result/submit/result.csv', encoding='utf-8', index=False, header=False, sep='\t')
+    print('output ok!')
+
+
+def get_maxchar(path_train, path_test):
+    with open(path_train, 'r', encoding='utf-8') as f:
+        lent = []
+        for x in f.readlines():
+            s1, s2, label = x.strip().split('\t')
+            lent.append(len(s1))
+            lent.append(len(s2))
+    p = pd.read_csv(path_test, sep='\t')
+    s1 = p['question1'].tolist()
+    s2 = p['question2'].tolist()
+    print(len(lent))
+    for x in s1:
+        lent.append(len(x))
+        # print(x)
+    for x in s2:
+        lent.append(len(x))
+    print(len(lent))
+    return lent
+
+
 def kfold(train_dir, k):
-    os.makedirs(path=os.path.join(train_dir, '/{}_fold'.format(k)))
+    file_path = train_dir+'/{}_fold'.format(k)
+    if not os.path.exists(file_path):
+        os.makedirs(file_path)
     with open(os.path.join(train_dir, 'train_data.txt'), 'r', encoding='utf-8') as f:
         train_data = [line for line in f.readlines()]
     kfold = KFold(n_splits=k, shuffle=True, random_state=1)
-
-    for index in range(k):
-        f1 = open(os.path.join(os.path.join(train_dir, '/{}_fold'.format(k)), '/train{}'.format(index)))
-        f2 = open(os.path.join(os.path.join(train_dir, '/{}_fold'.format(k)), '/dev{}'.format(index)))
-        for train, test in kfold.split(train_data):
-            for x in train_data[train]:
-                f1.write(x)
-            for x_ in train_data[test]:
-                f2.write(x_)
+    # print(os.path.join(os.path.join(train_dir, '{}_fold'.format(k)), 'train{}.txt'.format(0)))
+    index = 0
+    for train, test in kfold.split(train_data):
+        f1 = open(os.path.join(os.path.join(train_dir, '{}_fold'.format(k)), 'train{}.txt'.format(index)), 'w',
+                  encoding='utf-8')
+        f2 = open(os.path.join(os.path.join(train_dir, '{}_fold'.format(k)), 'dev{}.txt'.format(index)), 'w',
+                  encoding='utf-8')
+        for x in train:
+            f1.write(train_data[x])
+        for x_ in test:
+            f2.write(train_data[x_])
         f1.close()
         f2.close()
+        index += 1
 
 
-
-# if __name__ == '__main__':
-# #     l1 = get_trainnums('../data/trainset.txt')
-# #     print(l1)
+if __name__ == '__main__':
+    # process_tsv(path_tsv='../result/submit/test_results.tsv', path_testset='../data/testset.txt')
+    result_dir = '../result/submit/bert_result'
+    tsvlist = os.listdir(result_dir)
+    result = np.zeros(shape=(5000, 2))
+    for x in tsvlist:
+        path = os.path.join(result_dir, x)
+        result += pd.read_csv(path, sep='\t', names=['0', '1']).values
+    result = result/5
+    test_predict = np.argmax(result, axis=1)
+    id = get_testid('../data/testset.txt')
+    output = [id, test_predict]
+    output = np.array(output)
+    output = np.transpose(output)
+    d = pd.DataFrame(output)
+    d.to_csv('../result/submit/result.csv', encoding='utf-8', index=False, header=False, sep='\t')
+    print('output ok!')

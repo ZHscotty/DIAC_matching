@@ -1,29 +1,27 @@
 # DIAC_matching
 
-## 比赛地址：https://biendata.com/competition/2019diac/ 
+## [比赛地址](https://biendata.com/competition/2019diac/) 
 
 ##方法记录：
 ###单折： 
-随机初始化词向量+双向LSTM+Concat+softmax二分类 0.60 \
-BERT maxlen=28(太小)  0.78 \
-BERT maxlen=100     0.89 \
-word2vec+ESIM       0.72 \
-word2vec+ABCNN_3    0.68 \
-word2vec+BIMPM      0.59 \ 
-word2vec+DIIN
+|实验方法|线上提交结果|model|
+|---|---|---|
+|word Embedding(random Initialization)+BILSTM|0.60|[bilstm_classfication](https://github.com/ZHscotty/DIAC_matching/blob/master/code/bilstm_classfication.py)
+|BERT maxlen=28(too small)|0.78|[bert](https://github.com/ZHscotty/DIAC_matching/blob/master/code/bert.py)
+|BERT maxlen=100|0.89|[bert](https://github.com/ZHscotty/DIAC_matching/blob/master/code/bilstm_classfication.py)
+|word Embeddding(word2vec)+ESIM|0.72|[ESIM](https://github.com/ZHscotty/DIAC_matching/blob/master/code/ESIM.py)
+|word Embeddding(word2vec)+ABCNN_3|0.68|[ABCNN](https://github.com/ZHscotty/DIAC_matching/blob/master/code/ABCNN.py)
+|word Embeddding(word2vec)+BIMPM|0.59|[BIMPM](https://github.com/ZHscotty/DIAC_matching/blob/master/code/BIMPM.py)
+|word Embeddding(word2vec)+DIIN|?|[DIIN](https://github.com/ZHscotty/DIAC_matching/blob/master/code/DIIN.py)
 
 
 ###5折cv：
-word2vec+bilstm+concat （每折训练1 epoch） 0.5 \
+|实验方法|线上提交结果|
+|---|---|
+|word Embeddding(word2vec)+bilstm|0.5|
+|BERT maxlen=100|0.9|
 
 
-### 改进
-2.word2vec+BILSTM+Attention+concat+softmax \
-3.word2vec+BILSTM+Attention+consine \
-4.“Text Matching as Image Recognition” \
-8.字符级别+词级别 \
-9.Q和A分开
-尝试方向：
-ESIM最后得到p h向量后：
-1取最后一层lstm拼接
-2
+### 待实验
+* word2vec+BILSTM+Attention
+* charEmbedding+wordEmbedding
