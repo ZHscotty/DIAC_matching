@@ -55,6 +55,7 @@ class Model:
         h_encode = self.dropout(h_encode)
 
         I = tf.multiply(tf.expand_dims(p_encode, axis=2), tf.expand_dims(h_encode, axis=1))
+        print('I', I.shape)
 
         dense_out = self.dense_net(I)
         dense_out = self.dropout(dense_out)

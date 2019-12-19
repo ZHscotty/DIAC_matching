@@ -7,7 +7,7 @@ EARLY_STEP = 3
 EPOCH = 20
 DROP = 0.6
 # LSTM
-LSTM_NUM = 128
+LSTM_NUM = 256
 
 # ABCNN
 cnn1_filters = 64
